@@ -78,9 +78,14 @@ class MainActivity : AppCompatActivity() {
                 underline()
             }
 
+            divider()
+
             title("Url:")
-            "Text with underline" {
-                underline()
+            "Click here to open the url" {
+                url("https:www.google.com.br") {
+                    start = 6
+                    end = 10
+                }
             }
 
             divider()

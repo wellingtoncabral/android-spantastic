@@ -16,12 +16,7 @@ import android.view.View
 import androidx.annotation.*
 import androidx.annotation.IntRange
 
-interface Span {
-    fun addDecorator(decorator: Decorator, init: Decorator.() -> Unit)
-    fun build(spannableStringBuilder: SpannableStringBuilder)
-}
-
-internal class SpanImpl(private val text: CharSequence) : Span {
+class Span(private val text: CharSequence)  {
     private val items = mutableListOf<Decorator>()
 
     private fun decorate(
@@ -36,7 +31,7 @@ internal class SpanImpl(private val text: CharSequence) : Span {
         )
     }
 
-    override fun addDecorator(
+    fun addDecorator(
         decorator: Decorator,
         init: Decorator.() -> Unit
     ) {
@@ -44,7 +39,7 @@ internal class SpanImpl(private val text: CharSequence) : Span {
         decorator.init()
     }
 
-    override fun build(spannableStringBuilder: SpannableStringBuilder) {
+    internal fun build(spannableStringBuilder: SpannableStringBuilder) {
         val initialStart = spannableStringBuilder.length
         spannableStringBuilder.append(text)
 

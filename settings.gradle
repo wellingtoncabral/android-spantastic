@@ -6,5 +6,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "android-spantastic"
-include ':app'
+include ':sample'
 include ':Spantastic'

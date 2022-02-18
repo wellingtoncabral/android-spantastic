@@ -1,18 +1,8 @@
 package com.wcabral.spantastic
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.MaskFilter
-import android.graphics.Typeface
-import android.graphics.drawable.Drawable
-import android.net.Uri
-import android.os.Build
 import android.text.*
-import android.text.style.*
-import android.view.View
 import androidx.annotation.*
-import androidx.annotation.IntRange
 
 fun spantastic(
     spannableStringBuilder: SpannableStringBuilder = SpannableStringBuilder(),
@@ -29,7 +19,7 @@ class SpantasticBuilder(private val spannableStringBuilder: SpannableStringBuild
         text: CharSequence,
         init: Span.() -> Unit
     ): Span {
-        return SpanImpl(text).apply {
+        return Span(text).apply {
             spans += this
             init()
         }
