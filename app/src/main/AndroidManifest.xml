@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Androidspantastic">
         <activity
-            android:name="com.wcabral.spantasticsample.MainActivity"
+            android:name="com.wcabral.spantastic.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

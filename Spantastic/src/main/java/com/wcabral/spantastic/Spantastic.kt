@@ -1,11 +1,16 @@
 package com.wcabral.spantastic
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.MaskFilter
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.text.*
 import android.text.style.*
+import android.view.View
 import androidx.annotation.*
 import androidx.annotation.IntRange
 
@@ -20,92 +25,41 @@ class SpantasticBuilder(private val spannableStringBuilder: SpannableStringBuild
 
     private val spans = mutableListOf<Span>()
 
-    private fun <T : Span> initSpan(
-        span: T,
-        init: T.() -> Unit
-    ): T {
-        spans += span
-        span.init()
-        return span
+    private fun initSpan(
+        text: CharSequence,
+        init: Span.() -> Unit
+    ): Span {
+        return SpanImpl(text).apply {
+            spans += this
+            init()
+        }
     }
 
     operator fun String.unaryPlus() = text(this)
 
     operator fun String.invoke(
         init: Span.() -> Unit = {}
-    ): Span = initSpan(Text(this), init)
+    ): Span = initSpan(this, init)
 
     fun text(
         text: CharSequence,
         init: Span.() -> Unit = {}
-    ): Span = initSpan(Text(text), init)
+    ): Span = initSpan(text, init)
 
     fun text(
         context: Context,
         @StringRes textResId: Int,
         init: Span.() -> Unit = {}
-    ): Span = initSpan(Text(context.getText(textResId)), init)
+    ): Span = initSpan(context.getText(textResId), init)
 
-    fun quote(
-        @ColorInt color: Int = Color.BLACK,
-        @IntRange stripeWidth: Int = 0,
-        @IntRange gapWidth: Int = 0,
-        shouldBreakLine: Boolean = true,
-        init: Span.() -> Unit = {}
-    ): Span {
-        if (shouldBreakLine) breakLine()
-        return initSpan(Quote(color, stripeWidth, gapWidth), init)
-    }
+    fun newLine() { +"\n" }
 
-    fun bullet(
-        @ColorInt color: Int = Color.BLACK,
-        @IntRange gapWidth: Int = BulletSpan.STANDARD_GAP_WIDTH,
-        @IntRange bulletRadius: Int = 4,
-        shouldBreakLine: Boolean = true,
-        init: Span.() -> Unit = {}
-    ) : Span {
-        if (shouldBreakLine) breakLine()
-        return initSpan(Bullet(gapWidth, color, bulletRadius), init)
-    }
-
-//    fun image(
-//        context: Context,
-//        @DrawableRes resourceId: Int,
-//        verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM,
-//    ) : Span = initSpan(ImageFromResourceId(context, resourceId, verticalAlignment), {})
-
-//    fun image(
-//        context: Context,
-//        bitmap: Bitmap,
-//        verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM,
-//        init: Span.() -> Unit = {}
-//    ) : Span = initSpan(ImageFromBitmap(context, bitmap, verticalAlignment), init)
-//
-//    fun image(
-//        context: Context,
-//        uri: Uri,
-//        verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM,
-//        init: Span.() -> Unit = {}
-//    ) : Span = initSpan(ImageFromUri(context, uri, verticalAlignment), init)
-//
-//    fun image(
-//        drawable: Drawable,
-//        verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM,
-//        init: Span.() -> Unit = {}
-//    ) : Span = initSpan(ImageFromDrawable(drawable, verticalAlignment), init)
-//
 //    fun tab(
 //        @IntRange(from = 0) offset: Int,
 //        init: Span.() -> Unit = {}
-//    ) : Span = initSpan(TabStop(offset), init)
-
-    fun breakLine(): Span = initSpan(BreakLine(), {})
-
-    fun setPosition(
-        start: Int,
-        end: Int,
-        init: Span.() -> Unit = {}
-    ) : Span = initSpan(Position(start, end), init)
+//    ) {
+//        text("\t", init).initDecorator(Decorator(TabStopSpan.Standard(offset))) {}
+//    }
 
     fun build() : SpannableStringBuilder {
         spans.forEach { span ->
@@ -116,256 +70,228 @@ class SpantasticBuilder(private val spannableStringBuilder: SpannableStringBuild
 
 }
 
-interface Decorator {
-    fun onMeasuringPositions(length: Int)
-}
-
-open class SpanDecorator(
+open class Decorator(
     val what: Any,
-    val text: CharSequence = "",
-    val start: Int = -1,
-    val end: Int = -1,
-    val flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-) : Decorator {
+    val fillOnlyOnePosition: Boolean = false,
+    var start: Int = -1,
+    var end: Int = -1,
+    var flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+)
 
-    var measuringStart: Int = start
-    private set
-
-    var measuringEnd: Int = end
-    private set
-
-    override fun onMeasuringPositions(length: Int) {
-        if (start != -1 && end != -1) {
-            measuringStart = start
-            measuringEnd = end
-        } else {
-            measuringStart = length
-            measuringEnd = measuringStart + text.length
-        }
-    }
-
+interface Span {
+    fun addDecorator(decorator: Decorator, init: Decorator.() -> Unit)
+    fun build(spannableStringBuilder: SpannableStringBuilder)
 }
 
-abstract class Span {
+internal class SpanImpl(private val text: CharSequence) : Span {
 
-    private val items = mutableListOf<SpanDecorator>()
-
-    fun addDecorator(what: SpanDecorator) {
-        items += what
-    }
+    private val items = mutableListOf<Decorator>()
 
     private fun decorate(
-        decorator: SpanDecorator,
+        decorator: Decorator,
         spannableStringBuilder: SpannableStringBuilder
     ) {
-        spannableStringBuilder.apply {
-            append(decorator.text)
-            setSpan(
-                decorator.what,
-                decorator.measuringStart,
-                decorator.measuringEnd,
-                decorator.flags
-            )
-        }
+        spannableStringBuilder.setSpan(
+            decorator.what,
+            decorator.start,
+            decorator.end,
+            decorator.flags
+        )
     }
 
-    private fun decorateItems(
-        spannableStringBuilder: SpannableStringBuilder
-    ) {
+    override fun build(spannableStringBuilder: SpannableStringBuilder) {
+        val initialStart = spannableStringBuilder.length
+        spannableStringBuilder.append(text)
+
         items.forEach { decorator ->
+            // Start position
+            if (decorator.start == -1) {
+                val start = if (decorator.fillOnlyOnePosition) {
+                    spannableStringBuilder.append(" ")
+                    spannableStringBuilder.length - 1
+                } else {
+                    initialStart
+                }
+                decorator.start = start
+            } else {
+                decorator.start = initialStart + decorator.start
+            }
+
+            // End position
+            if (decorator.end == -1) {
+                decorator.end = spannableStringBuilder.length
+            } else {
+                decorator.end = initialStart + decorator.end
+            }
+
             decorate(decorator, spannableStringBuilder)
         }
+
     }
 
-    fun build(spannableStringBuilder: SpannableStringBuilder) {
-        val decorator = initialDecorator()
-        decorator.onMeasuringPositions(spannableStringBuilder.length)
-        decorate(
-            decorator = decorator,
-            spannableStringBuilder = spannableStringBuilder
-        )
-        decorateItems(spannableStringBuilder)
+    override fun addDecorator(
+        decorator: Decorator,
+        init: Decorator.() -> Unit
+    ) {
+        items += decorator
+        decorator.init()
     }
 
-    abstract fun initialDecorator(): SpanDecorator
 }
 
-internal class Text(private val text: CharSequence) : Span() {
-    override fun initialDecorator() = SpanDecorator(
-        what = Unit,
-        text = text
+fun Span.bold(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = StyleSpan(Typeface.BOLD)), init) }
+fun Span.italic(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = StyleSpan(Typeface.ITALIC)), init) }
+fun Span.underline(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = UnderlineSpan()), init) }
+fun Span.url(url: String, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = URLSpan(url)), init) }
+fun Span.foreground(color: Int, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = ForegroundColorSpan(color)), init) }
+fun Span.background(color: Int, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = BackgroundColorSpan(color)), init) }
+fun Span.strike(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = StrikethroughSpan()), init) }
+fun Span.relativeSize(proportion: Float, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = RelativeSizeSpan(proportion)), init) }
+fun Span.absoluteSize(size: Int, isDip: Boolean = true, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = AbsoluteSizeSpan(size, isDip)), init) }
+fun Span.superscript(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = SuperscriptSpan()), init) }
+fun Span.subscript(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = SubscriptSpan()), init) }
+fun Span.style(style: Int, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = StyleSpan(style)), init) }
+fun Span.scaleX(proportion: Float, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = ScaleXSpan(proportion)), init) }
+fun Span.mask(filter: MaskFilter, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = MaskFilterSpan(filter)), init) }
+fun Span.leadingMargin(every: Int = 0, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = LeadingMarginSpan.Standard(every)), init) }
+fun Span.leadingMargin(first: Int = 0, rest: Int = 0, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = LeadingMarginSpan.Standard(first, rest)), init) }
+fun Span.align(align: Layout.Alignment = Layout.Alignment.ALIGN_NORMAL, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = AlignmentSpan.Standard(align)), init) }
+fun Span.drawableMargin(drawable: Drawable, padding: Int = 0, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = DrawableMarginSpan(drawable, padding)), init) }
+fun Span.iconMargin(bitmap: Bitmap, padding: Int = 0, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = IconMarginSpan(bitmap, padding)), init) }
+fun Span.sansSerif(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = TypefaceSpan("sans-serif")), init) }
+fun Span.serif(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = TypefaceSpan("serif")), init) }
+fun Span.monospace(init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = TypefaceSpan("monospace")), init) }
+fun Span.textAppearance(context: Context, appearance: Int, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = TextAppearanceSpan(context, appearance)), init) }
+
+@RequiresApi(Build.VERSION_CODES.Q)
+fun Span.lineHeight(@Px @IntRange(from = 1) heightInPx: Int, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = LineHeightSpan.Standard(heightInPx)), init) }
+
+@RequiresApi(Build.VERSION_CODES.P)
+fun Span.typeface(typeface: Typeface, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = TypefaceSpan(typeface)), init) }
+fun Span.typeface(family: String, init: Decorator.() -> Unit = {}) { addDecorator(Decorator(what = TypefaceSpan(family)), init) }
+
+fun Span.clickable(
+    isUnderlineText: Boolean = true,
+    init: Decorator.() -> Unit = {},
+    onClick: (ClickableSpan) -> Unit,
+) {
+    addDecorator(
+        Decorator(
+            what = object : ClickableSpan() {
+                override fun onClick(widget: View) {
+                    onClick(this)
+                }
+
+                override fun updateDrawState(ds: TextPaint) {
+                    super.updateDrawState(ds)
+                    ds.isUnderlineText = isUnderlineText
+                }
+            }
+        ),
+        init
     )
 }
 
-internal class Position(
-    private val start: Int,
-    private val end: Int,
-) : Span() {
-    override fun initialDecorator() = SpanDecorator(
-        what = Unit,
-        start = start,
-        end = end
+fun Span.bullet(
+    @ColorInt color: Int = Color.BLACK,
+    @IntRange gapWidth: Int = BulletSpan.STANDARD_GAP_WIDTH,
+    @IntRange bulletRadius: Int = 4,
+    init: Decorator.() -> Unit = {}
+) {
+    addDecorator(
+        Decorator(
+            what = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                BulletSpan(gapWidth, color, bulletRadius)
+            } else {
+                BulletSpan(gapWidth)
+            }
+        ),
+        init
     )
 }
 
-internal class Quote(
-    @ColorInt private val color: Int = Color.BLACK,
-    @IntRange private val stripeWidth: Int = 0,
-    @IntRange private val gapWidth: Int = 0
-) : Span() {
-
-    override fun initialDecorator() = SpanDecorator(
-        what = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            QuoteSpan(color, stripeWidth, gapWidth)
-        } else {
-            QuoteSpan(color)
-        },
-        text = " "
+fun Span.quote(
+    @ColorInt color: Int = Color.BLACK,
+    @IntRange stripeWidth: Int = 0,
+    @IntRange gapWidth: Int = 0,
+    init: Decorator.() -> Unit = {}
+) {
+    addDecorator(
+        Decorator(
+            what = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                QuoteSpan(color, stripeWidth, gapWidth)
+            } else {
+                QuoteSpan(color)
+            }
+        ),
+        init
     )
-
 }
-
-internal class Bullet(
-    @IntRange private val gapWidth: Int = BulletSpan.STANDARD_GAP_WIDTH,
-    @ColorInt private val color: Int = Color.BLACK,
-    @IntRange private val bulletRadius: Int = 4
-) : Span() {
-
-    override fun initialDecorator() = SpanDecorator(
-        what = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            BulletSpan(gapWidth, color, bulletRadius)
-        } else {
-            BulletSpan(gapWidth)
-        },
-        text = " "
-    )
-
-}
-
-private const val ONE_SPACE = " "
-private const val BREAK_LINE = "\n"
-private const val UNICODE_REPLACEMENT_CHAR = "\uFFFC" // Unicode replacement character
-
-internal class ImageFromResourceId(
-    private val context: Context,
-    @DrawableRes private val resourceId: Int,
-    private val verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM
-) : Span() {
-
-    override fun initialDecorator() = SpanDecorator(
-        what = ImageSpan(context, resourceId, verticalAlignment),
-        text = UNICODE_REPLACEMENT_CHAR
-    )
-
-}
-
-//internal class ImageFromBitmap(
-//    private val context: Context,
-//    private val bitmap: Bitmap,
-//    private val verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM
-//) : Span(UNICODE_REPLACEMENT_CHAR) {
-//
-//    override fun initialDecorator() = ImageSpan(context, bitmap, verticalAlignment)
-//
-//}
-//
-//internal class ImageFromDrawable(
-//    private val drawable: Drawable,
-//    private val verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM
-//) : Span(UNICODE_REPLACEMENT_CHAR) {
-//
-//    override fun initialDecorator() = ImageSpan(drawable, verticalAlignment)
-//
-//}
-//
-//internal class ImageFromUri(
-//    private val context: Context,
-//    private val uri: Uri,
-//    private val verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM
-//) : Span(UNICODE_REPLACEMENT_CHAR) {
-//
-//    override fun initialDecorator() = ImageSpan(context, uri, verticalAlignment)
-//
-//}
-//
-//internal class TabStop(
-//    @IntRange(from = 0) private val offset: Int
-//) : Span("\t") {
-//
-//    override fun initialDecorator() = TabStopSpan.Standard(offset)
-//
-//}
-
-internal class BreakLine : Span() {
-
-    override fun initialDecorator() = SpanDecorator(
-        what = Unit,
-        text = BREAK_LINE
-    )
-
-}
-
-fun Span.bold() = apply { addDecorator(SpanDecorator(StyleSpan(Typeface.BOLD))) }
-fun Span.italic() = apply { addDecorator(SpanDecorator(StyleSpan(Typeface.ITALIC))) }
-fun Span.underline() = apply { addDecorator(SpanDecorator(UnderlineSpan())) }
-//fun Span.url(url: String) = apply { addDecorator(URLSpan(url)) }
-//fun Span.foreground(color: Int) = apply { addDecorator(ForegroundColorSpan(color)) }
-//fun Span.background(color: Int) = apply { addDecorator(BackgroundColorSpan(color)) }
-//fun Span.strike() = apply { addDecorator(StrikethroughSpan()) }
-//fun Span.relativeSize(proportion: Float) = apply { addDecorator(RelativeSizeSpan(proportion)) }
-//fun Span.absoluteSize(size: Int, isDip: Boolean = true) = apply { addDecorator(AbsoluteSizeSpan(size, isDip)) }
-//fun Span.superscript() = apply { addDecorator(SuperscriptSpan()) }
-//fun Span.subscript() = apply { addDecorator(SubscriptSpan()) }
-//fun Span.style(style: Int) = apply { addDecorator(StyleSpan(style)) }
-//fun Span.scaleX(proportion: Float) = apply { addDecorator(ScaleXSpan(proportion)) }
-//fun Span.mask(filter: MaskFilter) = apply { addDecorator(MaskFilterSpan(filter)) }
-//fun Span.leadingMargin(every: Int = 0) = apply { addDecorator(LeadingMarginSpan.Standard(every)) }
-//fun Span.leadingMargin(first: Int = 0, rest: Int = 0) = apply { addDecorator(LeadingMarginSpan.Standard(first, rest)) }
-//fun Span.align(align: Layout.Alignment = Layout.Alignment.ALIGN_NORMAL) = apply { addDecorator(AlignmentSpan.Standard(align)) }
-//fun Span.drawableMargin(drawable: Drawable, padding: Int = 0) = apply { addDecorator(DrawableMarginSpan(drawable, padding)) }
-//fun Span.iconMargin(bitmap: Bitmap, padding: Int = 0) = apply { addDecorator(IconMarginSpan(bitmap, padding)) }
-//
-//@RequiresApi(Build.VERSION_CODES.Q)
-//fun Span.lineHeight(@Px @IntRange(from = 1) heightInPx: Int) = apply { addDecorator(LineHeightSpan.Standard(heightInPx)) }
-//
-//@RequiresApi(Build.VERSION_CODES.P)
-//fun Span.typeface(typeface: Typeface) = apply { addDecorator(TypefaceSpan(typeface)) }
-//fun Span.typeface(family: String) = apply { addDecorator(TypefaceSpan(family)) }
-//
-//fun Span.sansSerif() = apply { addDecorator(TypefaceSpan("sans-serif")) }
-//fun Span.serif() = apply { addDecorator(TypefaceSpan("serif")) }
-//fun Span.monospace() = apply { addDecorator(TypefaceSpan("monospace")) }
-//fun Span.textAppearance(context: Context, appearance: Int) = apply { addDecorator(TextAppearanceSpan(context, appearance)) }
-//
-//fun Span.clickable(
-//    isUnderlineText: Boolean = true,
-//    onClick: (ClickableSpan) -> Unit
-//) = apply {
-//    addDecorator(
-//        object : ClickableSpan() {
-//            override fun onClick(widget: View) {
-//                onClick(this)
-//            }
-//
-//            override fun updateDrawState(ds: TextPaint) {
-//                super.updateDrawState(ds)
-//                ds.isUnderlineText = isUnderlineText
-//            }
-//        }
-//    )
-//}
 
 fun Span.image(
     context: Context,
     @DrawableRes resourceId: Int,
     verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM,
-) = apply {
+    init: Decorator.() -> Unit = {}
+) {
     addDecorator(
-        SpanDecorator(
-            ImageSpan(context, resourceId, verticalAlignment),
-            text = " ",
-        )
+        Decorator(
+            what = ImageSpan(context, resourceId, verticalAlignment),
+            fillOnlyOnePosition = true
+        ),
+        init
     )
+}
+
+fun Span.image(
+    drawable: Drawable,
+    verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM,
+    init: Decorator.() -> Unit = {}
+) {
+    addDecorator(
+        Decorator(
+            what = ImageSpan(drawable, verticalAlignment),
+            fillOnlyOnePosition = true
+        ),
+        init
+    )
+}
+
+fun Span.image(
+    context: Context,
+    bitmap: Bitmap,
+    verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM,
+    init: Decorator.() -> Unit = {}
+) {
+    addDecorator(
+        Decorator(
+            what = ImageSpan(context, bitmap, verticalAlignment),
+            fillOnlyOnePosition = true
+        ),
+        init
+    )
+}
+
+fun Span.image(
+    context: Context,
+    uri: Uri,
+    verticalAlignment: Int = DynamicDrawableSpan.ALIGN_BOTTOM,
+    init: Decorator.() -> Unit = {}
+) {
+    addDecorator(
+        Decorator(
+            what = ImageSpan(context, uri, verticalAlignment),
+            fillOnlyOnePosition = true
+        ),
+        init
+    )
+}
+
+fun Span.tab(
+    @IntRange(from = 0) offset: Int,
+    init: Decorator.() -> Unit = {}
+) {
+    addDecorator(Decorator(TabStopSpan.Standard(offset)), init)
 }
 
 fun Editable.asSpannableStringBuilder() = this as SpannableStringBuilder
