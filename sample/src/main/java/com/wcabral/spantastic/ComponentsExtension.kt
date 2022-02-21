@@ -41,6 +41,20 @@ fun SpantasticBuilder.divider() {
     newLine()
 }
 
+fun SpantasticBuilder.contactList(
+    vararg contacts: String,
+    onClick: (String) -> Unit
+) {
+    contacts.forEachIndexed { index, s ->
+        "@$s" {
+            clickable { onClick(s) }
+            bold()
+            foreground(Color.MAGENTA)
+        }
+        if (index < contacts.size-1) + ", " else + "."
+    }
+}
+
 fun SpantasticBuilder.tabGroup(
     @IntRange(from = 0) offset: Int,
     init: () -> Unit = {}
