@@ -1,8 +1,13 @@
 # Android Spantastic
-![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/wellingtoncabral/android-easy-permissions-kt/blob/main/LICENSE) ![JitPack](https://jitpack.io/v/wellingtoncabral/android-easy-permissions-kt.svg) [![ktlint](https://img.shields.io/badge/code%20style-%E2%9D%A4-FF4081.svg)](https://ktlint.github.io/)
+![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/wellingtoncabral/android-spantastic/blob/main/LICENSE) ![JitPack](https://jitpack.io/v/wellingtoncabral/android-easy-permissions-kt.svg) [![ktlint](https://img.shields.io/badge/code%20style-%E2%9D%A4-FF4081.svg)](https://ktlint.github.io/)
 
 Spantastic is an Android library that provides a simple and Kotlin fluent API for creating Android Spannable.
 This library wrappers `SpannableStringBuilder` and add methods to easily decorate the text with multiple spans.
+
+## Supported Spans:
+`absoluteSize` `align` `background` `bold` `bullet` `clickable` `drawableMargin` `foreground` `iconMargin` `image` `italic` `leadingMargin` `lineHeight` `mask` `monospace` `quote` `relativeSize` `sansSerif` `scaleX` `serif` `strike` `style` `subscript` `superscript` `tab` `textAppearance` `typeface` `underline` `url`
+
+<img src="misc/spantastic_demo.gif" width="360" height="820">
 
 ## How to add
 Step 1. Add the JitPack repository to your build file
@@ -22,7 +27,7 @@ Step 2. Add the dependency
 
 ```groovy
 dependencies {
-    implementation 'com.github.wellingtoncabral:android-easy-permissions-kt:<LATEST-VERSION>'
+    implementation 'com.github.wellingtoncabral:android-spantastic:<LATEST-VERSION>'
 }
 ```
 
@@ -30,31 +35,33 @@ dependencies {
 
 ```kotlin
 dependencies {
-    implementation ("com.github.wellingtoncabral:android-easy-permissions-kt:$LATEST_VERSION")
+    implementation ("com.github.wellingtoncabral:android-spantastic:$LATEST_VERSION")
 }
 ```
 
 ## How to use
-Use the `spantastic{}` method to decorate texts from `SpanTextBuilder` context.
+Use the `spantastic{}` builder to decorate texts from the `SpantasticBuilder` context.
 This method will return a `SpannableStringBuilder`.
 
-#### Making text
+```kotlin
+val span = spantastic {
+
+}
+binding.textView.text = span
+```
+
+### Making text
 You can make text in many more ways.
 
 ```kotlin
 val span = spantastic {
-    +"This is an example using unary plus operator"
+    +"This is an example using unary plus operator\n"
 
-    // Put a new line character "\n"
-    newLine()
-
-    "This is an example using a string invoke" {
+    "This is an example using a string invoke\n" {
         // Add decorators
     }
 
-    newLine()
-
-    text("This is an example using text function") {
+    text("This is an example using text function\n") {
         // Add decorators
     }
 }
@@ -62,9 +69,12 @@ binding.textView.text = span
 ```
 
 It looks like:
-<img src="misc/example_1.png">
 
-#### Adding decorators
+<kbd>
+<img src="misc/example_1.png">
+</kbd>
+
+### Adding decorators
 To manipulate the text, add decorators inside the text block.
 In the example below, mark the text with multiple decorators/spans.
 
@@ -82,8 +92,12 @@ binding.textView.text = span
 ```
 
 It looks like:
-<img src="misc/example_2.png">
 
+<kbd>
+<img src="misc/example_2.png">
+</kbd>
+
+---
 Note that the decorators are applied for a specific block of text. See an example:
 
 ```kotlin
@@ -117,9 +131,15 @@ binding.textView.text = span
 ```
 
 It looks like:
-<img src="misc/example_3.png">
 
-If you prefer put full text first and then apply decorators, take a look at these examples:
+<kbd>
+<img src="misc/example_3.png">
+</kbd>
+
+---
+
+If you prefer put full text first and then apply decorators, you can set up the `start` and `end` position. 
+Take a look at these examples:
 
 ```kotlin
 val span = spantastic {
@@ -153,9 +173,14 @@ binding.textView.text = span
 ```
 
 It looks like:
-<img src="misc/example_4.png">
 
-#### Creating extensions like components
+<kbd>
+<img src="misc/example_4.png">
+</kbd>
+
+### Creating extensions like components
+You can create extension functions to build custom decoration components. 
+In the example below, we created 3 custom components: `h1`, `title`, and `divider`.
 
 ```kotlin
 fun SpantasticBuilder.h1(text: String) {
@@ -208,7 +233,11 @@ binding.textView.text = span
 ```
 
 It looks like:
+
+<kbd>
 <img src="misc/example_5.png">
+</kbd>
+
 
 
 
