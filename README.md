@@ -189,7 +189,7 @@ It looks like:
 <img src="misc/example_4.png">
 </kbd>
 
-### Creating extensions like components
+## Creating extensions like components
 You can create extension functions to build custom decoration components.\
 In the example below, we created 3 custom components: `h1`, `title`, `divider`, and `contactList`.
 
@@ -255,6 +255,19 @@ It looks like:
 <kbd>
 <img src="misc/example_5.png">
 </kbd>
+
+## Initializing the spantastic with a known text
+If you already have an instance of `SpannableStringBuilder`, you can pass it to the `spantastic` builder to be appended in the context. For example, you can pass the `editText.text` as `SpannableStringBuilder` to the spantastic calling `asSpannableStringBuilder` like that:
+
+```kotlin
+binding.editText.text = spantastic(binding.editText.text.asSpannableStringBuilder()) {
+    bold()
+}
+```
+
+The bold decorator will be applied to the existing text in the EditText component.
+
+## Show case
 
 ### Adding clickable areas
 Spantastic provides 2 ways to work with clickable areas: `url` and `clickable`.
@@ -439,11 +452,11 @@ It looks like:
 <img src="misc/example_12.png">
 </kbd>
 
-### More examples
+## More examples
 To see more and use case implementations, please take a look at the sample app.\
 https://github.com/wellingtoncabral/android-spantastic/tree/main/sample/src/main/java/com/wcabral/spantastic
 
-### References
+## References
 1. https://developer.android.com/reference/android/text/Spannable.html
 2. https://developer.android.com/guide/topics/text/spans
 3. https://medium.com/androiddevelopers/spantastic-text-styling-with-spans-17b0c16b4568
