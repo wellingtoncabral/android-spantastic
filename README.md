@@ -64,6 +64,10 @@ val span = spantastic {
     text("This is an example using text function\n") {
         // Add decorators
     }
+
+    text(context, R.string.my_string) {
+        // Add decorators
+    }
 }
 binding.textView.text = span
 ```
@@ -138,36 +142,47 @@ It looks like:
 
 ---
 
-If you prefer put full text first and then apply decorators, you can set up the `start` and `end` position.\ 
-Take a look at these examples:
+If you prefer put full text first and then apply decorators, you can set up the `start` and `end` position. 
+
+Let's take a look at this example that draws the molecular formula of caffeine:
 
 ```kotlin
 val span = spantastic {
-    "By continuing, you agree to the Terms os Service and Privacy Policy." {
-        url("https://www.google.com") {
-            start = 32
-            end = 48
+    // Example using custom positions
+    "☕- C8H10N4O2" {
+        subscript {
+            start = 4
+            end = 5
         }
+        subscript {
+            start = 6
+            end = 8
+        }
+        subscript {
+            start = 9
+            end = 10
+        }
+        subscript {
+            start = 11
+            end = 12
+        }
+    }    
+}
+binding.textView.text = span
+```
 
-        url("https://github.com/wellingtoncabral") {
-            start = 53
-            end = 67
-        }
-    }
+In the same way without custom positions:
 
-    newLine()
-    newLine()
-
-    "Text with italic and strike decorations." {
-        bold {
-            start = 10
-            end = 16
-        }
-        strike {
-            start = 21
-            end = 27
-        }
-    }
+```kotlin
+val span = spantastic {
+    + "☕- C"
+    "8" { subscript() }
+    + "H"
+    "10" { subscript() }
+    + "N"
+    "4" { subscript() }
+    + "O"
+    "2" { subscript() }    
 }
 binding.textView.text = span
 ```
@@ -213,6 +228,7 @@ val span = spantastic {
     h1("Clickable decorations")
 
     title("Url:")
+    
     "Click here to open the url" {
         url("https:www.google.com.br") {
             start = 6
@@ -223,6 +239,7 @@ val span = spantastic {
     divider()
 
     title("Clickable:")
+    
     "Text with a clickable area" {
         clickable {
             Toast.makeText(this@MainActivity, "Text was clicked", Toast.LENGTH_SHORT).show()
@@ -238,20 +255,114 @@ It looks like:
 <img src="misc/example_5.png">
 </kbd>
 
-### Initializing the spantastic
-If you already have an instance of `SpannableStringBuilder`, you can pass it to the `spantastic` builder to be appended in the context.\
-For example, you can pass the `editText.text` as `SpannableStringBuilder` to the `spantastic` calling `asSpannableStringBuilder` like that:
+### Adding clickable areas
+Spantastic provides 2 ways to work with clickable areas: `url` and `clickable`.
+Take a look in this simple example:
 
 ```kotlin
-binding.editText.text = spantastic(binding.editText.text.asSpannableStringBuilder()) {
-    bold()
+val span = spantastic {
+    "Text with url" {
+        url("https://github.com/wellingtoncabral")
+    }
+
+    newLine()
+
+    "Text with clickable area" {
+        clickable(isUnderlineText = true) {
+            showActivity()
+        }
+    }
 }
+binding.textView.text = span
 ```
 
-The bold decorator will be applied to the existing text in the EditText component.
+It looks like:
+
+<kbd>
+<img src="misc/example_7.png">
+</kbd>
+
+The first example uses `url` to open the brownser with the given url and the second one uses `clickable` which invokes the lambda method, in this case `showActivity()`.
+
+Let's take a look in a real use case:
+
+```kotlin
+val span = spantastic {
+    "By continuing, you agree to the Terms os Service and Privacy Policy." {
+        url("https://github.com/wellingtoncabral") {
+            start = 32
+            end = 48
+        }
+
+        clickable(
+            isUnderlineText = true,
+            init = {
+                start = 53
+                end = 67
+            }
+        ) {
+            showActivity()
+        }
+    }
+}
+binding.textView.text = span
+```
+
+It looks like:
+
+<kbd>
+<img src="misc/example_8.png">
+</kbd>
+
+### Adding images
+Spantastic provides many ways to add images.
+
+```kotlin
+val span = spantastic {
+    "Text with image from resource id" {
+        image(this@MainActivity, R.drawable.ic_android_black_24dp, DynamicDrawableSpan.ALIGN_BASELINE)
+    }
+    
+    newLine()
+    
+    "Text with image " {
+        image(
+            context = this@MainActivity,
+            bitmap = bitmap,
+            verticalAlignment = DynamicDrawableSpan.ALIGN_CENTER
+        )
+    }
+    + " from Bitmap "       
+}
+binding.textView.text = span
+```
+
+It looks like:
+
+<kbd>
+<img src="misc/example_6.png">
+</kbd>
+
+### Adding Android Style Resource
+Use the `textAppearance` to set up a Android style resource.
+
+```kotlin
+val span = spantastic {
+    "Text with a custom appearance" {
+        textAppearance(this@MainActivity, R.style.CustomStyle)
+    } 
+}
+binding.textView.text = span
+```
+
+It looks like:
+
+<kbd>
+<img src="misc/example_9.png">
+</kbd>
 
 ### More examples
-To see more implementations and use cases, please take a look at the sample app.\
+To see more and use case implementations, please take a look at the sample app.\
 https://github.com/wellingtoncabral/android-spantastic/tree/main/sample/src/main/java/com/wcabral/spantastic
 
 ### References
