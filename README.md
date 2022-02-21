@@ -265,7 +265,7 @@ binding.editText.text = spantastic(binding.editText.text.asSpannableStringBuilde
 }
 ```
 
-The bold decorator will be applied to the existing text in the EditText component.
+The `bold` decorator will be applied to the existing text in the EditText component.
 
 ## Show case
 
@@ -362,7 +362,7 @@ Use the `textAppearance` to set up a Android style resource.
 ```kotlin
 val span = spantastic {
     "Text with a custom appearance" {
-        textAppearance(this@MainActivity, R.style.CustomStyle)
+        textAppearance(context, R.style.CustomStyle)
     } 
 }
 binding.textView.text = span
