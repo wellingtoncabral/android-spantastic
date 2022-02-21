@@ -60,17 +60,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initSpantastic() {
-//        binding.edtSpan.text = spantastic(binding.edtSpan.text.asSpannableStringBuilder()) {
-//            breakLine()
-//            h1("Teste")
-//            title("Mais coisas")
-//
-//            "Outro texto" {
-//                background(Color.BLACK)
-//                foreground(Color.WHITE)
-//            }
-//        }
-
         val span = spantastic {
 
             h1("Text Style")
@@ -141,17 +130,6 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Text was clicked", Toast.LENGTH_SHORT).show()
                 }
             }
-
-//            "Text with a clickable area" {
-//                clickable(
-//                    init = {
-//                        start = 0
-//                        end = 4
-//                    }
-//                ) {
-//                    Toast.makeText(this@MainActivity, "Text was clicked", Toast.LENGTH_SHORT).show()
-//                }
-//            }
 
             divider()
 
