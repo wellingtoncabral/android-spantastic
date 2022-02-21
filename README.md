@@ -1,5 +1,5 @@
 # Android Spantastic
-![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/wellingtoncabral/android-spantastic/blob/main/LICENSE) ![JitPack](https://jitpack.io/v/wellingtoncabral/android-easy-permissions-kt.svg) [![ktlint](https://img.shields.io/badge/code%20style-%E2%9D%A4-FF4081.svg)](https://ktlint.github.io/)
+![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/wellingtoncabral/android-spantastic/blob/main/LICENSE) ![JitPack](https://jitpack.io/v/wellingtoncabral/android-spantastic.svg) [![ktlint](https://img.shields.io/badge/code%20style-%E2%9D%A4-FF4081.svg)](https://ktlint.github.io/)
 
 Spantastic is an Android library that provides a simple and Kotlin fluent API for creating Android Spannable.
 This library wrappers `SpannableStringBuilder` and add methods to easily decorate the text with multiple spans.
@@ -40,7 +40,7 @@ dependencies {
 ```
 
 ## How to use
-Use the `spantastic{}` builder to decorate texts from the `SpantasticBuilder` context.
+Use the `spantastic{}` builder to decorate texts from the `SpantasticBuilder` context.\
 This method will return a `SpannableStringBuilder`.
 
 ```kotlin
@@ -75,7 +75,7 @@ It looks like:
 </kbd>
 
 ### Adding decorators
-To manipulate the text, add decorators inside the text block.
+To manipulate the text, add decorators inside the text block.\
 In the example below, mark the text with multiple decorators/spans.
 
 ```kotlin
@@ -138,7 +138,7 @@ It looks like:
 
 ---
 
-If you prefer put full text first and then apply decorators, you can set up the `start` and `end` position. 
+If you prefer put full text first and then apply decorators, you can set up the `start` and `end` position.\ 
 Take a look at these examples:
 
 ```kotlin
@@ -179,7 +179,7 @@ It looks like:
 </kbd>
 
 ### Creating extensions like components
-You can create extension functions to build custom decoration components. 
+You can create extension functions to build custom decoration components.\
 In the example below, we created 3 custom components: `h1`, `title`, and `divider`.
 
 ```kotlin
@@ -239,7 +239,7 @@ It looks like:
 </kbd>
 
 ### Initializing the spantastic
-If you already have an instance of `SpannableStringBuilder`, you can pass it to the `spantastic` builder to be appended in the context.
+If you already have an instance of `SpannableStringBuilder`, you can pass it to the `spantastic` builder to be appended in the context.\
 For example, you can pass the `editText.text` as `SpannableStringBuilder` to the `spantastic` calling `asSpannableStringBuilder` like that:
 
 ```kotlin
