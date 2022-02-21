@@ -191,7 +191,7 @@ It looks like:
 
 ### Creating extensions like components
 You can create extension functions to build custom decoration components.\
-In the example below, we created 3 custom components: `h1`, `title`, and `divider`.
+In the example below, we created 3 custom components: `h1`, `title`, `divider`, and `contactList`.
 
 ```kotlin
 fun SpantasticBuilder.h1(text: String) {
