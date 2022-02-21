@@ -255,8 +255,8 @@ To see more implementations and use cases, please take a look at the sample app.
 https://github.com/wellingtoncabral/android-spantastic/tree/main/sample/src/main/java/com/wcabral/spantastic
 
 ### References
-1. https://developer.android.com/reference/android/text/Spannable.html?utm_source=android-arsenal.com&utm_medium=referral&utm_campaign=6271
-2. https://developer.android.com/guide/topics/text/spans#:~:text=Android%20categorizes%20spans%20in%20two,applied%20to%20an%20entire%20paragraph
+1. https://developer.android.com/reference/android/text/Spannable.html
+2. https://developer.android.com/guide/topics/text/spans
 3. https://medium.com/androiddevelopers/spantastic-text-styling-with-spans-17b0c16b4568
 
 
