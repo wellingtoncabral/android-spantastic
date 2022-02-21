@@ -99,9 +99,8 @@ It looks like:
 
 <kbd>
 <img src="misc/example_2.png">
-</kbd>
+</kbd> <br /> <br />
 
----
 Note that the decorators are applied for a specific block of text. See an example:
 
 ```kotlin
@@ -138,12 +137,9 @@ It looks like:
 
 <kbd>
 <img src="misc/example_3.png">
-</kbd>
+</kbd> <br /> <br />
 
----
-
-If you prefer put full text first and then apply decorators, you can set up the `start` and `end` position. 
-
+If you prefer put full text first and then apply decorators, you can set up the `start` and `end` position. <br />
 Let's take a look at this example that draws the molecular formula of caffeine:
 
 ```kotlin
@@ -201,7 +197,7 @@ In the example below, we created 3 custom components: `h1`, `title`, and `divide
 fun SpantasticBuilder.h1(text: String) {
     text {
         bold()
-        absoluteSize(20)
+        absoluteSize(22)
         align(Layout.Alignment.ALIGN_CENTER)
         divider()
     }
@@ -209,8 +205,9 @@ fun SpantasticBuilder.h1(text: String) {
 
 fun SpantasticBuilder.title(text: String, shouldBreakLine: Boolean = true) {
     text {
-        bold()
         absoluteSize(10)
+        underline()
+        bold()
         if (shouldBreakLine) newLine()
     }
 }
@@ -219,32 +216,36 @@ fun SpantasticBuilder.divider() {
     newLine()
     newLine()
 }
+
+fun SpantasticBuilder.contactList(
+    vararg contacts: String,
+    onClick: (String) -> Unit
+) {
+    contacts.forEachIndexed { index, contact ->
+        "@$contact" {
+            clickable { onClick(contact) }
+            bold()
+            foreground(Color.MAGENTA)
+        }
+        if (index < contacts.size-1) + ", " else + "."
+    }
+}
 ```
 
 So, you can use them easily like that:
 
 ```kotlin
 val span = spantastic {
-    h1("Clickable decorations")
+    h1("Example")
 
-    title("Url:")
-    
-    "Click here to open the url" {
-        url("https:www.google.com.br") {
-            start = 6
-            end = 10
-        }
+    title("Contact list: ")
+
+    + "Click to show the contact info "
+    contactList("Wellington", "Thiago", "Patrick", "Geovana", "Júlia") { contact ->
+        showContactInfo(contact)
     }
-
+    
     divider()
-
-    title("Clickable:")
-    
-    "Text with a clickable area" {
-        clickable {
-            Toast.makeText(this@MainActivity, "Text was clicked", Toast.LENGTH_SHORT).show()
-        }
-    }
 }
 binding.textView.text = span
 ```
@@ -280,7 +281,7 @@ It looks like:
 
 <kbd>
 <img src="misc/example_7.png">
-</kbd>
+</kbd><br /><br />
 
 The first example uses `url` to open the brownser with the given url and the second one uses `clickable` which invokes the lambda method, in this case `showActivity()`.
 
@@ -319,20 +320,17 @@ Spantastic provides many ways to add images.
 
 ```kotlin
 val span = spantastic {
-    "Text with image from resource id" {
-        image(this@MainActivity, R.drawable.ic_android_black_24dp, DynamicDrawableSpan.ALIGN_BASELINE)
+    "Text with image from resource id " {
+        image(context, R.drawable.ic_android, DynamicDrawableSpan.ALIGN_BASELINE)
     }
     
     newLine()
     
     "Text with image " {
-        image(
-            context = this@MainActivity,
-            bitmap = bitmap,
-            verticalAlignment = DynamicDrawableSpan.ALIGN_CENTER
-        )
+        image(context, bitmap, DynamicDrawableSpan.ALIGN_CENTER)
     }
-    + " from Bitmap "       
+    
+    + " from the Bitmap "       
 }
 binding.textView.text = span
 ```
@@ -341,7 +339,9 @@ It looks like:
 
 <kbd>
 <img src="misc/example_6.png">
-</kbd>
+</kbd> <br /> <br />
+
+See also `drawableMargin` and `iconMargin`.
 
 ### Adding Android Style Resource
 Use the `textAppearance` to set up a Android style resource.
@@ -355,10 +355,88 @@ val span = spantastic {
 binding.textView.text = span
 ```
 
+```xml
+<resources>
+    <style name="CustomStyle">
+        <item name="android:textColor">@color/teal_700</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold|italic</item>
+    </style>
+</resources>
+```
+
 It looks like:
 
 <kbd>
 <img src="misc/example_9.png">
+</kbd>
+
+### Adding alignments
+
+```kotlin
+val span = spantastic {
+    "Text with normal alignment" {
+        align(Layout.Alignment.ALIGN_NORMAL)
+    }
+    
+    newLine()
+    
+    "Text with center alignment" {
+        align(Layout.Alignment.ALIGN_CENTER)
+    }
+    
+    newLine()
+    
+    "Text with opposite alignment" {
+        align(Layout.Alignment.ALIGN_OPPOSITE)
+    }
+}
+binding.textView.text = span
+```
+
+It looks like:
+
+<kbd>
+<img src="misc/example_10.png">
+</kbd> 
+
+### Adding custom fonts
+
+```kotlin
+val span = spantastic {
+    val myTypeface = Typeface.create(
+        ResourcesCompat.getFont(contexxt, R.font.aguafina_script), Typeface.NORMAL
+    )
+    "Text with a custom typeface" {
+        typeface(myTypeface)
+        absoluteSize(24)
+    }   
+}
+binding.textView.text = span
+```
+
+It looks like:
+
+<kbd>
+<img src="misc/example_11.png">
+</kbd>
+
+### Adding mask
+
+```kotlin
+val span = spantastic {
+    "Text with a blur mask and absolute size 18" {
+        mask(BlurMaskFilter(radius = 5f, BlurMaskFilter.Blur.NORMAL))
+        absoluteSize(18)
+    }
+}
+binding.textView.text = span
+```
+
+It looks like:
+
+<kbd>
+<img src="misc/example_12.png">
 </kbd>
 
 ### More examples
