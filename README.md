@@ -50,7 +50,7 @@ val span = spantastic {
 binding.textView.text = span
 ```
 
-### Making text
+### Adding text
 You can make text in many more ways.
 
 ```kotlin
