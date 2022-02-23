@@ -51,7 +51,7 @@ binding.textView.text = span
 ```
 
 ### Adding text
-You can make text in many more ways.
+You can add text in many more ways.
 
 ```kotlin
 val span = spantastic {
@@ -418,7 +418,7 @@ It looks like:
 ```kotlin
 val span = spantastic {
     val myTypeface = Typeface.create(
-        ResourcesCompat.getFont(contexxt, R.font.aguafina_script), Typeface.NORMAL
+        ResourcesCompat.getFont(context, R.font.aguafina_script), Typeface.NORMAL
     )
     "Text with a custom typeface" {
         typeface(myTypeface)
