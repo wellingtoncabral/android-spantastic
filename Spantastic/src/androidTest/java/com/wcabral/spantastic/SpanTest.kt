@@ -22,11 +22,6 @@ import org.junit.Assert.*
 @SmallTest
 class SpanTest {
 
-    //         Context of the app under test.
-//        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-//        assertEquals("com.wcabral.spantastic.test", appContext.packageName)
-
-
     @Test
     fun testText_bold() {
         // Given
